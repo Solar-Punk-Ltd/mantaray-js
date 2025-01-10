@@ -8,6 +8,7 @@ import { commonMatchers, getSampleMantarayNode } from './utils'
 
 commonMatchers()
 const beeUrl = process.env.BEE_API_URL || 'http://localhost:1633'
+const stamp = process.env.BEE_POSTAGE || 'dummystamp'
 const bee = new Bee(beeUrl)
 
 const hexToBytes = (hexString: string): Reference => {
@@ -15,7 +16,7 @@ const hexToBytes = (hexString: string): Reference => {
 }
 
 const saveFunction = async (data: Uint8Array): Promise<Reference> => {
-  const hexRef = await bee.uploadData(process.env.BEE_POSTAGE, data)
+  const hexRef = await bee.uploadData(stamp, data)
 
   return hexToBytes(hexRef.reference)
 }
@@ -25,14 +26,14 @@ const loadFunction = async (address: Reference): Promise<Uint8Array> => {
 }
 
 const uploadData = async (data: Uint8Array): Promise<string> => {
-  const result = await bee.uploadData(process.env.BEE_POSTAGE, data)
+  const result = await bee.uploadData(stamp, data)
 
   return result.reference
 }
 
 /** Uploads the testpage directory with bee-js and return back its root manifest data */
 const beeTestPageManifestData = async (): Promise<Uint8Array> => {
-  const uploadResult = await bee.uploadFilesFromDirectory(process.env.BEE_POSTAGE, join(__dirname, 'testpage'), {
+  const uploadResult = await bee.uploadFilesFromDirectory(stamp, join(__dirname, 'testpage'), {
     pin: true,
     indexDocument: 'index.html',
   })
@@ -42,7 +43,7 @@ const beeTestPageManifestData = async (): Promise<Uint8Array> => {
 
 it('should generate the same content hash as Bee', async () => {
   const testDir = join(__dirname, 'testpage')
-  const uploadResult = await bee.uploadFilesFromDirectory(process.env.BEE_POSTAGE, testDir, {
+  const uploadResult = await bee.uploadFilesFromDirectory(stamp, testDir, {
     pin: true,
     indexDocument: 'index.html',
   })
@@ -129,7 +130,7 @@ it('should construct manifests of testpage folder', async () => {
     'website-index-document': 'index.html',
   })
   const iNodeRef = await iNode.save(saveFunction)
-  expect(Object.keys(iNode.forks)).toStrictEqual(Object.keys(node.forks))
+  expect(Object.keys(iNode.forks || {})).toStrictEqual(Object.keys(node.forks || {}))
   const marshal = iNode.serialize()
   const iNodeAgain = new MantarayNode()
   iNodeAgain.deserialize(marshal)
@@ -156,7 +157,7 @@ it('should remove fork then upload it', async () => {
   const checkNode1 = getCheckNode()
   const refCheckNode1 = checkNode1.getContentAddress
   // current forks of node
-  expect(Object.keys(checkNode1.forks)).toStrictEqual([String(path1[13]), String(path2[13])])
+  expect(Object.keys(checkNode1.forks || {})).toStrictEqual([String(path1[13]), String(path2[13])])
   node.removePath(path2)
   const refDeleted = await node.save(saveFunction)
   // root reference should not remain the same
@@ -164,7 +165,7 @@ it('should remove fork then upload it', async () => {
   node.load(loadFunction, refDeleted)
   // 'm' key of prefix table disappeared
   const checkNode2 = getCheckNode()
-  expect(Object.keys(checkNode2.forks)).toStrictEqual([String(path1[13])])
+  expect(Object.keys(checkNode2.forks || {})).toStrictEqual([String(path1[13])])
   // reference should differ because the changed fork set
   const refCheckNode2 = checkNode2.getContentAddress
   expect(refCheckNode2).not.toStrictEqual(refCheckNode1)
@@ -196,8 +197,8 @@ it('should modify the tree and call save on the mantaray root then load it back 
   const descendantNodeAgain = firstNodeAgain.forks[109].node.forks[46].node
 
   expect(firstNodeAgain.getMetadata).toStrictEqual(firstNode.getMetadata)
-  expect(firstNodeAgain.getMetadata['additionalParam']).toBe('first')
+  expect(firstNodeAgain.getMetadata.additionalParam).toBe('first')
   // fails if the save does not walk the whole tree
   expect(descendantNodeAgain.getMetadata).toStrictEqual(descendantNode.getMetadata)
-  expect(descendantNodeAgain.getMetadata['additionalParam']).toBe('second')
+  expect(descendantNodeAgain.getMetadata.additionalParam).toBe('second')
 })

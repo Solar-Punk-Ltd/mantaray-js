@@ -1,4 +1,4 @@
-import { Bytes, MarshalVersion, MetadataMapping, NodeType, StorageLoader, StorageSaver } from './types'
+import { Bytes, MarshalVersion, MetadataMapping, NodeType, StorageLoader, StorageSaver, StorageSaverReturnType } from './types'
 import { Reference, Utils } from '@ethersphere/bee-js'
 import {
   checkReference,
@@ -506,11 +506,10 @@ export class MantarayNode {
    * Saves dirty flagged ManifestNodes and its forks recursively
    * @returns Reference of the top manifest node.
    */
-  public async save(storageSaver: StorageSaver): Promise<Reference> {
-    const { reference } = await this.recursiveSave(storageSaver)
-    // ACT ref should be here
+  public async save(storageSaver: StorageSaver): Promise<StorageSaverReturnType> {
+    const { reference, actReference } = await this.recursiveSave(storageSaver)
 
-    return reference
+    return { reference, actReference }
   }
 
   public isDirty(): boolean {

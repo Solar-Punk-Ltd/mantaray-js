@@ -3,15 +3,15 @@
  * For a detailed explanation regarding each configuration property and type check, visit:
  * https://jestjs.io/docs/en/configuration.html
  */
-import { BeeDebug } from '@ethersphere/bee-js'
+import { Bee } from '@ethersphere/bee-js'
 import type { Config } from '@jest/types'
 
 export default async (): Promise<Config.InitialOptions> => {
   if (!process.env.BEE_POSTAGE) {
     try {
       console.log('Creating postage stamps...')
-      const beeDebugUrl = process.env.BEE_DEBUG_API_URL || 'http://localhost:1635'
-      const bee = new BeeDebug(beeDebugUrl)
+      const beeUrl = process.env.BEE_DEBUG_API_URL || 'http://localhost:1633'
+      const bee = new Bee(beeUrl)
       process.env.BEE_POSTAGE = await bee.createPostageBatch('1', 20, {
         waitForUsable: true,
         waitForUsableTimeout: 120_000,

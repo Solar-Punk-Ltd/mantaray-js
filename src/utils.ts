@@ -150,7 +150,9 @@ export function common(a: Uint8Array, b: Uint8Array): Uint8Array {
   return c
 }
 
-export function hexStringToUint8Array(hexString: HexString) {
+export function hexStringToUint8Array(hexString: HexString | undefined) {
+  if (!hexString) return [];
+  
   if (hexString.startsWith('0x')) {
       hexString = hexString.slice(2);
   }
@@ -165,15 +167,6 @@ export function hexStringToUint8Array(hexString: HexString) {
   }
 
   return byteArray;
-}
-
-export function bytesToHexString(bytes: Bytes<32 | 64>): HexString {
-  let hexString = '0x';
-  for (let i = 0; i < bytes.length; i++) {
-      hexString += bytes[i].toString(16).padStart(2, '0');
-  }
-
-  return hexString as HexString;
 }
 
 export class IndexBytes {

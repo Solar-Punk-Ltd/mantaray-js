@@ -1,8 +1,9 @@
 import getRandomValues from 'get-random-values'
 import type { Message } from 'js-sha3'
 import { keccak256 } from 'js-sha3'
-import { Bytes, Reference } from './types'
+import { Bytes } from './types'
 import { HexString, isHexString } from '@ethersphere/bee-js/dist/types/utils/hex'
+import { Reference } from '@ethersphere/bee-js'
 
 export function checkReference(ref: Reference): void | never {
   if (!isHexString(ref)) {

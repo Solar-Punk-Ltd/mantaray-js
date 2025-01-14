@@ -1,14 +1,17 @@
 import getRandomValues from 'get-random-values'
 import type { Message } from 'js-sha3'
 import { keccak256 } from 'js-sha3'
-import { Bytes, Reference } from './types'
+import { Bytes } from './types'
+import { FlavoredType, Reference, Utils } from '@ethersphere/bee-js'
+
+
 
 export function checkReference(ref: Reference): void | never {
-  if (!(ref instanceof Uint8Array)) {
-    throw new Error('Given referennce is not an Uint8Array instance.')
+  if (!Utils.isHexString(ref)) {
+    throw new Error('Given referennce is not a HexString.')
   }
 
-  if (ref.length !== 32 && ref.length !== 64) {
+  if (ref.length !== 64 && ref.length !== 128) {
     throw new Error(`Wrong reference length. Entry only can be 32 or 64 length in bytes`)
   }
 }
@@ -16,7 +19,7 @@ export function checkReference(ref: Reference): void | never {
 export function checkBytes<Length extends number>(bytes: unknown, length: number): asserts bytes is Bytes<Length> {
   if (!(bytes instanceof Uint8Array)) throw Error('Cannot set given bytes, because is not an Uint8Array type')
 
-  if (bytes.length !== 32) {
+  if (bytes.length !== length) {
     throw Error(`Cannot set given bytes, because it does not have ${length} length. Got ${bytes.length}`)
   }
 }
@@ -146,6 +149,25 @@ export function common(a: Uint8Array, b: Uint8Array): Uint8Array {
   }
 
   return c
+}
+
+export function hexStringToUint8Array(hexString: Utils.HexString | undefined) {
+  if (!hexString) return [];
+  
+  if (hexString.startsWith('0x')) {
+      hexString = hexString.slice(2);
+  }
+
+  if (hexString.length % 2 !== 0) {
+      throw new Error('Hex string must have an even length');
+  }
+
+  const byteArray = new Uint8Array(hexString.length / 2);
+  for (let i = 0; i < byteArray.length; i++) {
+      byteArray[i] = parseInt(hexString.substr(i * 2, 2), 16);
+  }
+
+  return byteArray;
 }
 
 export class IndexBytes {

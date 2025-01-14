@@ -1,4 +1,5 @@
-import { Bytes, MarshalVersion, MetadataMapping, NodeType, Reference, StorageLoader, StorageSaver } from './types'
+import { Bytes, MarshalVersion, MetadataMapping, NodeType, StorageLoader, StorageSaver } from './types'
+import { Reference, Utils } from '@ethersphere/bee-js'
 import {
   checkReference,
   common,
@@ -17,7 +18,7 @@ const PATH_SEPARATOR_BYTE = 47
 const PADDING_BYTE = 0x0a
 
 type ForkMapping = { [key: number]: MantarayFork }
-type RecursiveSaveReturnType = { reference: Reference; changed: boolean }
+type RecursiveSaveReturnType = { reference: Reference; actReference: Reference | null; changed: boolean }
 
 const nodeForkSizes = {
   nodeType: 1,
@@ -111,9 +112,12 @@ export class MantarayFork {
 
     const entry: Reference | undefined = this.node.getContentAddress
 
+    
     if (!entry) throw Error('cannot serialize MantarayFork because it does not have contentAddress')
+      
+    const entryAsUint8 = Utils.hexToBytes(entry)
 
-    const data = new Uint8Array([nodeType, ...prefixLengthBytes, ...prefixBytes, ...entry])
+    const data = new Uint8Array([nodeType, ...prefixLengthBytes, ...prefixBytes, ...entryAsUint8])
 
     if (this.node.IsWithMetadataType()) {
       const jsonString = JSON.stringify(this.node.getMetadata)
@@ -158,9 +162,8 @@ export class MantarayFork {
       const { refBytesSize, metadataByteSize } = withMetadata
 
       if (metadataByteSize > 0) {
-        node.setEntry = data.slice(nodeForkSizes.preReference, nodeForkSizes.preReference + refBytesSize) as
-          | Bytes<32>
-          | Bytes<64>
+        const uint8 = data.slice(nodeForkSizes.preReference, nodeForkSizes.preReference + refBytesSize) as Bytes<32> | Bytes<64>
+        node.setEntry = Utils.bytesToHex(uint8) as Reference
 
         const startMetadata = nodeForkSizes.preReference + refBytesSize + nodeForkSizes.metadata
         const metadataBytes = data.slice(startMetadata, startMetadata + metadataByteSize)
@@ -169,7 +172,8 @@ export class MantarayFork {
         node.setMetadata = JSON.parse(jsonString)
       }
     } else {
-      node.setEntry = data.slice(nodeForkSizes.preReference) as Bytes<32> | Bytes<64>
+      const uint8 = data.slice(nodeForkSizes.preReference) as Bytes<32> | Bytes<64>
+      node.setEntry = Utils.bytesToHex(uint8) as Reference
     }
     node.setType = nodeType
 
@@ -183,6 +187,8 @@ export class MantarayNode {
   private obfuscationKey?: Bytes<32>
   /** reference of a loaded manifest node. if undefined, the node can be handled as `dirty` */
   private contentAddress?: Reference
+  /** ACT root hash of saved data */
+  private actRoothash?: Reference
   /** reference of an content that the manifest refers to */
   private entry?: Reference
   private metadata?: MetadataMapping
@@ -197,12 +203,18 @@ export class MantarayNode {
     this.contentAddress = contentAddress
   }
 
+  public set setActRootHash(actReference: Reference) {
+    checkReference(actReference)
+
+    this.actRoothash = this.actRoothash
+  }
+
   public set setEntry(entry: Reference) {
     checkReference(entry)
 
     this.entry = entry
-
-    if (!equalBytes(entry, new Uint8Array(entry.length))) this.makeValue()
+    
+    if (entry !== '0x' + '0'.repeat(entry.length)) this.makeValue()
 
     this.makeDirty()
   }
@@ -487,6 +499,7 @@ export class MantarayNode {
     this.deserialize(data)
 
     this.setContentAddress = reference
+    // ACT should be saved?
   }
 
   /**
@@ -495,6 +508,7 @@ export class MantarayNode {
    */
   public async save(storageSaver: StorageSaver): Promise<Reference> {
     const { reference } = await this.recursiveSave(storageSaver)
+    // ACT ref should be here
 
     return reference
   }
@@ -515,7 +529,7 @@ export class MantarayNode {
       this.forks = {} //if there were no forks initialized it is not indended to be
     }
 
-    if (!this.entry) this.entry = new Uint8Array(32) as Bytes<32> // at directoties
+    if (!this.entry) this.entry = '0x' + '0'.repeat(64) as Reference // at directoties
 
     /// Header
     const version: MarshalVersion = '0.2'
@@ -545,7 +559,7 @@ export class MantarayNode {
       ...this.obfuscationKey!,
       ...versionBytes,
       ...referenceLengthBytes,
-      ...this.entry,
+      ...Utils.hexToBytes(this.entry),
       ...indexBytes,
       ...flattenBytesArray(forkSerializations),
     ])
@@ -580,7 +594,7 @@ export class MantarayNode {
       if (refBytesSize === 0) {
         entry = new Uint8Array(32)
       }
-      this.setEntry = entry as Reference
+      this.setEntry = Utils.bytesToHex(entry)
       let offset = nodeHeaderSize + refBytesSize
       const indexBytes = data.slice(offset, offset + 32) as Bytes<32>
 
@@ -647,16 +661,17 @@ export class MantarayNode {
     const savedReturns = await Promise.all(savePromises)
 
     if (this.contentAddress && savedReturns.every(v => !v.changed)) {
-      return { reference: this.contentAddress, changed: false }
+      return { reference: this.contentAddress, actReference: this.actRoothash || null, changed: false }
     }
 
     // save the actual manifest as well
     const data = this.serialize()
-    const reference = await storageSaver(data)
+    const { reference, actReference} = await storageSaver(data) // encrypt, act should be here?
 
     this.setContentAddress = reference
+    if (actReference) this.setActRootHash = actReference
 
-    return { reference, changed: true }
+    return { reference, actReference, changed: true }
   }
 }
 
@@ -691,8 +706,8 @@ function serializeVersion(version: MarshalVersion): Bytes<31> {
 function serializeReferenceLength(entry: Reference): Bytes<1> {
   const referenceLength = entry.length
 
-  if (referenceLength !== 32 && referenceLength !== 64) {
-    throw new Error(`Wrong referenceLength. It can be only 32 or 64. Got: ${referenceLength}`)
+  if (referenceLength !== 64 && referenceLength !== 128) {
+    throw new Error(`Wrong referenceLength. It can be only 64 or 128. Got: ${referenceLength}`)
   }
   const bytes = new Uint8Array(1)
   bytes[0] = referenceLength

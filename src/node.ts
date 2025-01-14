@@ -18,7 +18,7 @@ const PATH_SEPARATOR_BYTE = 47
 const PADDING_BYTE = 0x0a
 
 type ForkMapping = { [key: number]: MantarayFork }
-type RecursiveSaveReturnType = { reference: Reference; changed: boolean }
+type RecursiveSaveReturnType = { reference: Reference; actReference: Reference | null; changed: boolean }
 
 const nodeForkSizes = {
   nodeType: 1,
@@ -187,6 +187,8 @@ export class MantarayNode {
   private obfuscationKey?: Bytes<32>
   /** reference of a loaded manifest node. if undefined, the node can be handled as `dirty` */
   private contentAddress?: Reference
+  /** ACT root hash of saved data */
+  private actRoothash?: Reference
   /** reference of an content that the manifest refers to */
   private entry?: Reference
   private metadata?: MetadataMapping
@@ -199,6 +201,12 @@ export class MantarayNode {
     checkReference(contentAddress)
 
     this.contentAddress = contentAddress
+  }
+
+  public set setActRootHash(actReference: Reference) {
+    checkReference(actReference)
+
+    this.actRoothash = this.actRoothash
   }
 
   public set setEntry(entry: Reference) {
@@ -491,6 +499,7 @@ export class MantarayNode {
     this.deserialize(data)
 
     this.setContentAddress = reference
+    // ACT should be saved?
   }
 
   /**
@@ -499,6 +508,7 @@ export class MantarayNode {
    */
   public async save(storageSaver: StorageSaver): Promise<Reference> {
     const { reference } = await this.recursiveSave(storageSaver)
+    // ACT ref should be here
 
     return reference
   }
@@ -651,16 +661,17 @@ export class MantarayNode {
     const savedReturns = await Promise.all(savePromises)
 
     if (this.contentAddress && savedReturns.every(v => !v.changed)) {
-      return { reference: this.contentAddress, changed: false }
+      return { reference: this.contentAddress, actReference: this.actRoothash || null, changed: false }
     }
 
     // save the actual manifest as well
     const data = this.serialize()
-    const reference = await storageSaver(data)
+    const { reference, actReference} = await storageSaver(data) // encrypt, act should be here?
 
     this.setContentAddress = reference
+    if (actReference) this.setActRootHash = actReference
 
-    return { reference, changed: true }
+    return { reference, actReference, changed: true }
   }
 }
 

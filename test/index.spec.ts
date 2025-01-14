@@ -1,9 +1,8 @@
-import { Bee, Utils } from '@ethersphere/bee-js'
+import { Bee, Reference, Utils } from '@ethersphere/bee-js'
 import FS from 'fs'
 import { join } from 'path'
 import { MantarayNode } from '../src'
 import { loadAllNodes } from '../src/node'
-import type { Reference } from '../src/types'
 import { commonMatchers, getSampleMantarayNode } from './utils'
 
 commonMatchers()

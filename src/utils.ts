@@ -2,11 +2,12 @@ import getRandomValues from 'get-random-values'
 import type { Message } from 'js-sha3'
 import { keccak256 } from 'js-sha3'
 import { Bytes } from './types'
-import { HexString, isHexString } from '@ethersphere/bee-js/dist/types/utils/hex'
-import { Reference } from '@ethersphere/bee-js'
+import { FlavoredType, Reference, Utils } from '@ethersphere/bee-js'
+
+
 
 export function checkReference(ref: Reference): void | never {
-  if (!isHexString(ref)) {
+  if (!Utils.isHexString(ref)) {
     throw new Error('Given referennce is not a HexString.')
   }
 
@@ -18,7 +19,7 @@ export function checkReference(ref: Reference): void | never {
 export function checkBytes<Length extends number>(bytes: unknown, length: number): asserts bytes is Bytes<Length> {
   if (!(bytes instanceof Uint8Array)) throw Error('Cannot set given bytes, because is not an Uint8Array type')
 
-  if (bytes.length !== 32) {
+  if (bytes.length !== length) {
     throw Error(`Cannot set given bytes, because it does not have ${length} length. Got ${bytes.length}`)
   }
 }
@@ -150,7 +151,7 @@ export function common(a: Uint8Array, b: Uint8Array): Uint8Array {
   return c
 }
 
-export function hexStringToUint8Array(hexString: HexString | undefined) {
+export function hexStringToUint8Array(hexString: Utils.HexString | undefined) {
   if (!hexString) return [];
   
   if (hexString.startsWith('0x')) {

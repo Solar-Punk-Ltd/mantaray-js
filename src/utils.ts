@@ -166,6 +166,15 @@ export function hexStringToUint8Array(hexString: HexString) {
   return byteArray;
 }
 
+export function bytesToHexString(bytes: Bytes<32 | 64>): HexString {
+  let hexString = '0x';
+  for (let i = 0; i < bytes.length; i++) {
+      hexString += bytes[i].toString(16).padStart(2, '0');
+  }
+
+  return hexString as HexString;
+}
+
 export class IndexBytes {
   private bytes: Bytes<32>
 

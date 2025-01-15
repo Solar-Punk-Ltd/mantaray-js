@@ -566,7 +566,7 @@ export class MantarayNode {
     /// Encryption
     /// perform XOR encryption on bytes after obfuscation key
     encryptDecrypt(this.obfuscationKey!, bytes, this.obfuscationKey!.length)
-
+console.log('bytes', bytes)
     return bytes
   }
 

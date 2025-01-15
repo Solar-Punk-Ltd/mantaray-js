@@ -27,7 +27,10 @@ module.exports = function (api) {
           helpers: false,
           regenerator: true
         }
-      ]
+      ],
+      ['@babel/plugin-transform-typescript', {
+        allowNamespaces: true,
+      }],
     ]
   }
 }

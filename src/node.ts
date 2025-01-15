@@ -558,7 +558,7 @@ export class MantarayNode {
       ...this.obfuscationKey!,
       ...versionBytes,
       ...referenceLengthBytes,
-      ...Utils.hexToBytes(this.entry),
+      ...Utils.hexToBytes<64>(this.entry),
       ...indexBytes,
       ...flattenBytesArray(forkSerializations),
     ])
@@ -703,9 +703,9 @@ function serializeVersion(version: MarshalVersion): Bytes<31> {
 }
 
 function serializeReferenceLength(entry: Reference): Bytes<1> {
-  const referenceLength = entry.length
+  const referenceLength = entry.length / 2
 
-  if (referenceLength !== 64 && referenceLength !== 128) {
+  if (referenceLength !== 32 && referenceLength !== 64) {
     throw new Error(`Wrong referenceLength. It can be only 64 or 128. Got: ${referenceLength}`)
   }
   const bytes = new Uint8Array(1)

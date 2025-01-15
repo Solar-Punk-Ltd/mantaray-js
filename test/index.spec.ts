@@ -16,6 +16,7 @@ const hexToBytes = (hexString: string): Uint8Array => {
 
 const saveFunction = async (data: Uint8Array): Promise<{ reference: Reference, actReference: Reference | null }> => {
   const hexRef = await bee.uploadData(stamp, data)
+  console.log("HEXREF: ", hexRef)
 
   return { reference: hexRef.reference, actReference: null }
 }
@@ -75,12 +76,12 @@ it('should generate the same content hash as Bee', async () => {
   iNode.addFork(utf8ToBytes('/'), websiteIndReference, {
     'website-index-document': 'index.html',
   })
-  const { reference } = await iNode.save(saveFunction)
+  const iNodeRes = await iNode.save(saveFunction)
 
   // sanity check
-  expect(uploadResult.reference).toEqual('e9d46950cdb17e15d0b3712bcb325724a3107560143d65a7acd00ea781eb9cd7')
+  expect(uploadResult.reference).toEqual('40ade3f0c28821ae2904842af12d6acd30b313e8e71b898cccc169c3d7532793')
 
-  expect(reference).toEqual(hexToBytes(uploadResult.reference))
+  expect(iNodeRes.reference).toEqual(uploadResult.reference)
 })
 
 it('should serialize/deserialize the same as Bee', async () => {

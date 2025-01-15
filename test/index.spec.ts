@@ -71,15 +71,16 @@ it('should generate the same content hash as Bee', async () => {
     'Content-Type': 'image/png',
     Filename: 'icon.png',
   })
-  iNode.addFork(utf8ToBytes('/'), '0x' + '0'.repeat(64) as Reference, {
+  const websiteIndReference = '0'.repeat(64) as Reference;
+  iNode.addFork(utf8ToBytes('/'), websiteIndReference, {
     'website-index-document': 'index.html',
   })
-  const iNodeRef = await iNode.save(saveFunction)
+  const { reference } = await iNode.save(saveFunction)
 
   // sanity check
   expect(uploadResult.reference).toEqual('e9d46950cdb17e15d0b3712bcb325724a3107560143d65a7acd00ea781eb9cd7')
 
-  expect(iNodeRef).toEqual(hexToBytes(uploadResult.reference))
+  expect(reference).toEqual(hexToBytes(uploadResult.reference))
 })
 
 it('should serialize/deserialize the same as Bee', async () => {

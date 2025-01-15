@@ -214,7 +214,7 @@ export class MantarayNode {
 
     this.entry = entry
     
-    if (entry !== '0x' + '0'.repeat(entry.length)) this.makeValue()
+    if (entry !== '0'.repeat(entry.length)) this.makeValue()
 
     this.makeDirty()
   }
@@ -528,7 +528,7 @@ export class MantarayNode {
       this.forks = {} //if there were no forks initialized it is not indended to be
     }
 
-    if (!this.entry) this.entry = '0x' + '0'.repeat(64) as Reference // at directoties
+    if (!this.entry) this.entry = '0'.repeat(64) as Reference // at directoties
 
     /// Header
     const version: MarshalVersion = '0.2'

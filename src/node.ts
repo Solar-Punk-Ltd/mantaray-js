@@ -566,7 +566,7 @@ export class MantarayNode {
     /// Encryption
     /// perform XOR encryption on bytes after obfuscation key
     encryptDecrypt(this.obfuscationKey!, bytes, this.obfuscationKey!.length)
-console.log('bytes', bytes)
+
     return bytes
   }
 
@@ -756,7 +756,7 @@ export const equalNodes = (a: MantarayNode, b: MantarayNode, accumulatedPrefix =
   }
 
   // node entry comparisation
-  if (a.getEntry === b.getEntry) {
+  if (a.getEntry !== b.getEntry) {
     throw Error(`Nodes do not have same entries. \n a: ${a.getEntry} \n b: ${a.getEntry}`)
   }
 

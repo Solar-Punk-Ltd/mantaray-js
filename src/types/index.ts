@@ -20,12 +20,7 @@ export type MetadataMapping = { [key: string]: string }
 
 export type StorageLoader = (reference: Reference) => Promise<Uint8Array>
 
-export type StorageSaverReturnType = {
-  reference: Reference,
-  actReference: Reference | null
-}
-
-export type StorageSaver = (data: Uint8Array, options?: { ecrypt?: boolean, act?: boolean }) => Promise<StorageSaverReturnType>
+export type StorageSaver = (data: Uint8Array, options?: { ecrypt?: boolean, act?: boolean }) => Promise<Reference>
 
 export type StorageHandler = {
   load: StorageLoader

@@ -1,4 +1,4 @@
-import { Bytes, MarshalVersion, MetadataMapping, NodeType, StorageLoader, StorageSaver, StorageSaverReturnType } from './types'
+import { Bytes, MarshalVersion, MetadataMapping, NodeType, StorageLoader, StorageSaver } from './types'
 import { Reference, Utils } from '@ethersphere/bee-js'
 import {
   checkReference,
@@ -18,7 +18,7 @@ const PATH_SEPARATOR_BYTE = 47
 const PADDING_BYTE = 0x0a
 
 type ForkMapping = { [key: number]: MantarayFork }
-type RecursiveSaveReturnType = { reference: Reference; actReference: Reference | null; changed: boolean }
+type RecursiveSaveReturnType = { reference: Reference; changed: boolean }
 
 const nodeForkSizes = {
   nodeType: 1,
@@ -499,17 +499,16 @@ export class MantarayNode {
     this.deserialize(data)
 
     this.setContentAddress = reference
-    // ACT should be saved?
   }
 
   /**
    * Saves dirty flagged ManifestNodes and its forks recursively
    * @returns Reference of the top manifest node.
    */
-  public async save(storageSaver: StorageSaver): Promise<StorageSaverReturnType> {
-    const { reference, actReference } = await this.recursiveSave(storageSaver)
+  public async save(storageSaver: StorageSaver): Promise<Reference> {
+    const { reference } = await this.recursiveSave(storageSaver)
 
-    return { reference, actReference }
+    return reference
   }
 
   public isDirty(): boolean {
@@ -594,6 +593,7 @@ export class MantarayNode {
         entry = new Uint8Array(32)
       }
       this.setEntry = Utils.bytesToHex(entry)
+  console.log('Entry:', Utils.bytesToHex(entry));
       let offset = nodeHeaderSize + refBytesSize
       const indexBytes = data.slice(offset, offset + 32) as Bytes<32>
 
@@ -660,17 +660,16 @@ export class MantarayNode {
     const savedReturns = await Promise.all(savePromises)
 
     if (this.contentAddress && savedReturns.every(v => !v.changed)) {
-      return { reference: this.contentAddress, actReference: this.actRoothash || null, changed: false }
+      return { reference: this.contentAddress, changed: false }
     }
 
     // save the actual manifest as well
     const data = this.serialize()
-    const { reference, actReference} = await storageSaver(data) // encrypt, act should be here?
+    const reference = await storageSaver(data) // encrypt, act should be here?
 
     this.setContentAddress = reference
-    if (actReference) this.setActRootHash = actReference
 
-    return { reference, actReference, changed: true }
+    return { reference, changed: true }
   }
 }
 

@@ -14,11 +14,10 @@ const hexToBytes = (hexString: string): Uint8Array => {
   return Utils.hexToBytes(hexString)
 }
 
-const saveFunction = async (data: Uint8Array, options?: FileUploadOptions): Promise<{ reference: Reference, actReference: Reference | null }> => {
+const saveFunction = async (data: Uint8Array, options?: FileUploadOptions): Promise<Reference> => {
   const hexRef = await bee.uploadData(stamp, data, options)
-  console.log("HEXREF: ", hexRef)
 
-  return { reference: hexRef.reference, actReference: null }
+  return hexRef.reference
 }
 
 const loadFunction = async (address: Reference): Promise<Uint8Array> => {
@@ -81,9 +80,9 @@ it('should generate the same content hash as Bee', async () => {
   // sanity check
   expect(uploadResult.reference).toEqual('40ade3f0c28821ae2904842af12d6acd30b313e8e71b898cccc169c3d7532793')
 
-  expect(iNodeRes.reference).toEqual(uploadResult.reference)
+  expect(iNodeRes).toEqual(uploadResult.reference)
 })
-/*
+
 it('should serialize/deserialize the same as Bee', async () => {
   const data = await beeTestPageManifestData()
   const node = new MantarayNode()
@@ -98,7 +97,7 @@ it('should serialize/deserialize the same as Bee', async () => {
   await loadAllNodes(loadFunction, nodeAgain)
   expect(nodeAgain).toStrictEqual(node)
 })
-  *//*
+  
 it('should construct manifests of testpage folder', async () => {
   const data = await beeTestPageManifestData()
   const node = new MantarayNode()
@@ -121,7 +120,6 @@ it('should construct manifests of testpage folder', async () => {
     'Content-Type': 'text/html; charset=utf-8',
     Filename: 'index.html',
   })
-  // !! IMPORTANT
   iNode.addFork(utf8ToBytes('img/icon.png.txt'), textReference as Reference, {
     'Content-Type': 'text/plain; charset=utf-8',
     Filename: 'icon.png.txt',
@@ -133,19 +131,23 @@ it('should construct manifests of testpage folder', async () => {
   iNode.addFork(utf8ToBytes('/'), '0'.repeat(64) as Reference, {
     'website-index-document': 'index.html',
   })
-  const { reference } = await iNode.save(saveFunction)
+  const reference = await iNode.save(saveFunction)
   expect(Object.keys(iNode.forks || {})).toStrictEqual(Object.keys(node.forks || {}))
   const marshal = iNode.serialize()
   const iNodeAgain = new MantarayNode()
   iNodeAgain.deserialize(marshal)
   await loadAllNodes(loadFunction, iNodeAgain)
+  console.log('iNode forks:', iNode.forks);
+  console.log('Node forks:', node.forks);
+  console.log('Fork 105 - iNode:', JSON.stringify(iNode.forks!['105'], null, 2));
+console.log('Fork 105 - Node:', JSON.stringify(node.forks!['105'], null, 2));
   // check after serialization the object is same
   expect(iNode).toBeEqualNode(iNodeAgain)
   // check bee manifest is equal with the constructed one.
   expect(iNode).toBeEqualNode(node)
   // eslint-disable-next-line no-console
   console.log('Constructed root manifest hash', reference)
-})*/
+})
 /*
 it('should remove fork then upload it', async () => {
   const sampleNode = getSampleMantarayNode()

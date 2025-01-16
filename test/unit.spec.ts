@@ -6,8 +6,8 @@ import { getSampleMantarayNode } from './utils'
 
 it('should init a single mantaray node with a random address', () => {
   const node = initManifestNode()
-  const randAddress = gen32Bytes()
-  node.setEntry = Utils.bytesToHex(randAddress)
+  const randAddress = Utils.bytesToHex(gen32Bytes()) as Reference
+  node.setEntry = randAddress
   const serialized = node.serialize()
   const nodeAgain = new MantarayNode()
   nodeAgain.deserialize(serialized)

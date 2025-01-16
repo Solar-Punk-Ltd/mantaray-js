@@ -40,7 +40,7 @@ const beeTestPageManifestData = async (): Promise<Uint8Array> => {
 
   return bee.downloadData(uploadResult.reference) //only download its manifest
 }
-/*
+
 it('should generate the same content hash as Bee', async () => {
   const testDir = join(__dirname, 'testpage')
   const uploadResult = await bee.uploadFilesFromDirectory(stamp, testDir, {
@@ -65,7 +65,7 @@ it('should generate the same content hash as Bee', async () => {
     Filename: 'index.html',
   })
   iNode.addFork(utf8ToBytes('img/icon.png.txt'), textReference as Reference, {
-    'Content-Type': 'text/plain',
+    'Content-Type': 'text/plain; charset=utf-8',
     Filename: 'icon.png.txt',
   })
   iNode.addFork(utf8ToBytes('img/icon.png'), imageReference as Reference, {
@@ -82,7 +82,7 @@ it('should generate the same content hash as Bee', async () => {
   expect(uploadResult.reference).toEqual('40ade3f0c28821ae2904842af12d6acd30b313e8e71b898cccc169c3d7532793')
 
   expect(iNodeRes.reference).toEqual(uploadResult.reference)
-})*/
+})
 /*
 it('should serialize/deserialize the same as Bee', async () => {
   const data = await beeTestPageManifestData()
@@ -98,7 +98,7 @@ it('should serialize/deserialize the same as Bee', async () => {
   await loadAllNodes(loadFunction, nodeAgain)
   expect(nodeAgain).toStrictEqual(node)
 })
-  */
+  *//*
 it('should construct manifests of testpage folder', async () => {
   const data = await beeTestPageManifestData()
   const node = new MantarayNode()
@@ -121,8 +121,9 @@ it('should construct manifests of testpage folder', async () => {
     'Content-Type': 'text/html; charset=utf-8',
     Filename: 'index.html',
   })
+  // !! IMPORTANT
   iNode.addFork(utf8ToBytes('img/icon.png.txt'), textReference as Reference, {
-    'Content-Type': '',
+    'Content-Type': 'text/plain; charset=utf-8',
     Filename: 'icon.png.txt',
   })
   iNode.addFork(utf8ToBytes('img/icon.png'), imageReference as Reference, {
@@ -144,7 +145,7 @@ it('should construct manifests of testpage folder', async () => {
   expect(iNode).toBeEqualNode(node)
   // eslint-disable-next-line no-console
   console.log('Constructed root manifest hash', reference)
-})
+})*/
 /*
 it('should remove fork then upload it', async () => {
   const sampleNode = getSampleMantarayNode()

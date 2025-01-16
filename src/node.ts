@@ -756,8 +756,8 @@ export const equalNodes = (a: MantarayNode, b: MantarayNode, accumulatedPrefix =
   }
 
   // node entry comparisation
-  if (a.getEntry !== b.getEntry) {
-    throw Error(`Nodes do not have same entries. \n a: ${a.getEntry} \n b: ${a.getEntry}`)
+  if (a.getEntry?.toString() !== b.getEntry?.toString()) {
+    throw Error(`Nodes do not have same entries. \n a: ${a.getEntry} \n b: ${b.getEntry}`)
   }
 
   if (!a.forks) return

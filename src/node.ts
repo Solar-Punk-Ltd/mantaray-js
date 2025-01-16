@@ -187,8 +187,6 @@ export class MantarayNode {
   private obfuscationKey?: Bytes<32>
   /** reference of a loaded manifest node. if undefined, the node can be handled as `dirty` */
   private contentAddress?: Reference
-  /** ACT root hash of saved data */
-  private actRoothash?: Reference
   /** reference of an content that the manifest refers to */
   private entry?: Reference
   private metadata?: MetadataMapping
@@ -201,12 +199,6 @@ export class MantarayNode {
     checkReference(contentAddress)
 
     this.contentAddress = contentAddress
-  }
-
-  public set setActRootHash(actReference: Reference) {
-    checkReference(actReference)
-
-    this.actRoothash = this.actRoothash
   }
 
   public set setEntry(entry: Reference) {
@@ -665,7 +657,7 @@ export class MantarayNode {
 
     // save the actual manifest as well
     const data = this.serialize()
-    const reference = await storageSaver(data) // encrypt, act should be here?
+    const reference = await storageSaver(data) // encrypt should be here?
 
     this.setContentAddress = reference
 

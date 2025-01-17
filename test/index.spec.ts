@@ -227,7 +227,6 @@ it('should upload the correct content with correct path', async () => {
   })
 
   const saveResult = await mantaray.save(saveFunction);
-  console.log("Save result: ", saveResult);
 
   const downloadPath = `/tmp/${saveResult}`;
   execSync(`swarm-cli manifest download ${saveResult} ${downloadPath}`);

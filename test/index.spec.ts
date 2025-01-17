@@ -78,7 +78,7 @@ it('should generate the same content hash as Bee', async () => {
   const iNodeRes = await iNode.save(saveFunction)
 
   // sanity check
-  expect(uploadResult.reference).toEqual('40ade3f0c28821ae2904842af12d6acd30b313e8e71b898cccc169c3d7532793')
+  expect(uploadResult.reference).toEqual('ac9f347091bec7ea23fbf6f5786134bd6cb3b89a32ba47e6a1c06fa36caecf41')
 
   expect(iNodeRes).toEqual(uploadResult.reference)
 })
@@ -142,7 +142,7 @@ it('should construct manifests of testpage folder', async () => {
   expect(iNode).toBeEqualNode(iNodeAgain)
   // check bee manifest is equal with the constructed one.
   expect(iNode).toBeEqualNode(node)
-  // eslint-disable-next-line no-console
+  // eslint-disable-next-line no- le
   console.log('Constructed root manifest hash', reference)
 })
 

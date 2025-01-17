@@ -1,17 +1,18 @@
-import { Bee, BeeRequestOptions, FileUploadOptions, Reference, Utils } from '@ethersphere/bee-js'
+import { Bee, FileUploadOptions, Reference } from '@ethersphere/bee-js'
 import FS from 'fs'
 import { join } from 'path'
 import { MantarayNode } from '../src'
 import { loadAllNodes } from '../src/node'
 import { commonMatchers, getSampleMantarayNode } from './utils'
+import { execSync } from 'child_process'
 
 commonMatchers()
 const beeUrl = process.env.BEE_API_URL || 'http://localhost:1633'
 const stamp = process.env.BEE_POSTAGE || 'dummystamp'
 const bee = new Bee(beeUrl)
 
-const hexToBytes = (hexString: string): Uint8Array => {
-  return Utils.hexToBytes(hexString)
+const utf8ToBytes = (value: string): Uint8Array => {
+  return new TextEncoder().encode(value)
 }
 
 const saveFunction = async (data: Uint8Array, options?: FileUploadOptions): Promise<Reference> => {
@@ -55,9 +56,7 @@ it('should generate the same content hash as Bee', async () => {
     uploadData(imageBytes),
     uploadData(textBytes),
   ])
-  const utf8ToBytes = (value: string): Uint8Array => {
-    return new TextEncoder().encode(value)
-  }
+
   const iNode = new MantarayNode()
   iNode.addFork(utf8ToBytes('index.html'), indexReference as Reference, {
     'Content-Type': 'text/html; charset=utf-8',
@@ -205,4 +204,42 @@ it('should modify the tree and call save on the mantaray root then load it back 
   // fails if the save does not walk the whole tree
   expect(descendantNodeAgain.getMetadata).toStrictEqual(descendantNode.getMetadata)
   expect(descendantNodeAgain.getMetadata!.additionalParam).toBe('second')
+})
+
+it('should upload the correct content with correct path', async () => {
+  const indexPath = 'testpage/index.html';
+  const indexBytes = FS.readFileSync(join(__dirname, indexPath));
+  const uploadRes = await uploadData(indexBytes);
+  const iconPath = 'testpage/img/icon.png';
+  const iconBytes = FS.readFileSync(join(__dirname, iconPath));
+  const iconRes = await uploadData(iconBytes)
+  
+  const mantaray = new MantarayNode();
+
+  mantaray.addFork(utf8ToBytes(indexPath), uploadRes as Reference, {
+    'Content-Type': 'text/plain; charset=utf-8',
+    Filename: 'utils.ts',
+  });
+
+  mantaray.addFork(utf8ToBytes(iconPath), iconRes as Reference, {
+    'Content-Type': 'image/png',
+    Filename: 'icon.png',
+  })
+
+  const saveResult = await mantaray.save(saveFunction);
+  console.log("Save result: ", saveResult);
+
+  const downloadPath = `/tmp/${saveResult}`;
+  execSync(`swarm-cli manifest download ${saveResult} ${downloadPath}`);
+  
+  // Validate folder structure
+  expect(FS.existsSync(join(downloadPath, iconPath))).toBe(true);
+  expect(FS.existsSync(join(downloadPath, indexPath))).toBe(true);
+
+  // Validate file contents
+  const downloadedIconBytes = FS.readFileSync(join(downloadPath, iconPath));
+  expect(Buffer.compare(downloadedIconBytes, iconBytes)).toBe(0);
+
+  const downloadedIndexBytes = FS.readFileSync(join(downloadPath, indexPath));
+  expect(Buffer.compare(downloadedIndexBytes, indexBytes)).toBe(0);
 })

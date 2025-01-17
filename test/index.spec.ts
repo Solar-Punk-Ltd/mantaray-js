@@ -97,7 +97,7 @@ it('should serialize/deserialize the same as Bee', async () => {
   await loadAllNodes(loadFunction, nodeAgain)
   expect(nodeAgain).toStrictEqual(node)
 })
-/* FAILS  
+
 it('should construct manifests of testpage folder', async () => {
   const data = await beeTestPageManifestData()
   const node = new MantarayNode()
@@ -137,10 +137,7 @@ it('should construct manifests of testpage folder', async () => {
   const iNodeAgain = new MantarayNode()
   iNodeAgain.deserialize(marshal)
   await loadAllNodes(loadFunction, iNodeAgain)
-  console.log('iNode forks:', iNode.forks);
-  console.log('Node forks:', node.forks);
-  console.log('Fork 105 - iNode:', JSON.stringify(iNode.forks!['105'], null, 2));
-console.log('Fork 105 - Node:', JSON.stringify(node.forks!['105'], null, 2));
+
   // check after serialization the object is same
   expect(iNode).toBeEqualNode(iNodeAgain)
   // check bee manifest is equal with the constructed one.
@@ -148,7 +145,7 @@ console.log('Fork 105 - Node:', JSON.stringify(node.forks!['105'], null, 2));
   // eslint-disable-next-line no-console
   console.log('Constructed root manifest hash', reference)
 })
-*/
+
 it('should remove fork then upload it', async () => {
   const sampleNode = getSampleMantarayNode()
   const node = sampleNode.node

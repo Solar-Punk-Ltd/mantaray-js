@@ -585,7 +585,7 @@ export class MantarayNode {
         entry = new Uint8Array(32)
       }
       this.setEntry = Utils.bytesToHex(entry)
-  console.log('Entry:', Utils.bytesToHex(entry));
+  
       let offset = nodeHeaderSize + refBytesSize
       const indexBytes = data.slice(offset, offset + 32) as Bytes<32>
 

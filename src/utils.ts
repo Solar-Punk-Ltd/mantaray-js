@@ -2,9 +2,7 @@ import getRandomValues from 'get-random-values'
 import type { Message } from 'js-sha3'
 import { keccak256 } from 'js-sha3'
 import { Bytes } from './types'
-import { FlavoredType, Reference, Utils } from '@ethersphere/bee-js'
-
-
+import { Reference, Utils } from '@ethersphere/bee-js'
 
 export function checkReference(ref: Reference): void | never {
   if (!Utils.isHexString(ref)) {
@@ -152,22 +150,22 @@ export function common(a: Uint8Array, b: Uint8Array): Uint8Array {
 }
 
 export function hexStringToUint8Array(hexString: Utils.HexString | undefined) {
-  if (!hexString) return [];
-  
+  if (!hexString) return []
+
   if (hexString.startsWith('0x')) {
-      hexString = hexString.slice(2);
+    hexString = hexString.slice(2)
   }
 
   if (hexString.length % 2 !== 0) {
-      throw new Error('Hex string must have an even length');
+    throw new Error('Hex string must have an even length')
   }
 
-  const byteArray = new Uint8Array(hexString.length / 2);
+  const byteArray = new Uint8Array(hexString.length / 2)
   for (let i = 0; i < byteArray.length; i++) {
-      byteArray[i] = parseInt(hexString.substr(i * 2, 2), 16);
+    byteArray[i] = parseInt(hexString.substr(i * 2, 2), 16)
   }
 
-  return byteArray;
+  return byteArray
 }
 
 export class IndexBytes {

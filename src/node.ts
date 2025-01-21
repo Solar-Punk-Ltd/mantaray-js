@@ -112,9 +112,8 @@ export class MantarayFork {
 
     const entry: Reference | undefined = this.node.getContentAddress
 
-    
     if (!entry) throw Error('cannot serialize MantarayFork because it does not have contentAddress')
-      
+
     const entryAsUint8 = Utils.hexToBytes(entry)
 
     const data = new Uint8Array([nodeType, ...prefixLengthBytes, ...prefixBytes, ...entryAsUint8])
@@ -162,7 +161,9 @@ export class MantarayFork {
       const { refBytesSize, metadataByteSize } = withMetadata
 
       if (metadataByteSize > 0) {
-        const uint8 = data.slice(nodeForkSizes.preReference, nodeForkSizes.preReference + refBytesSize) as Bytes<32> | Bytes<64>
+        const uint8 = data.slice(nodeForkSizes.preReference, nodeForkSizes.preReference + refBytesSize) as
+          | Bytes<32>
+          | Bytes<64>
         node.setEntry = Utils.bytesToHex(uint8) as Reference
 
         const startMetadata = nodeForkSizes.preReference + refBytesSize + nodeForkSizes.metadata
@@ -205,7 +206,7 @@ export class MantarayNode {
     checkReference(entry)
 
     this.entry = entry
-    
+
     if (entry !== '0'.repeat(entry.length)) this.makeValue()
 
     this.makeDirty()
@@ -585,7 +586,7 @@ export class MantarayNode {
         entry = new Uint8Array(32)
       }
       this.setEntry = Utils.bytesToHex(entry)
-  
+
       let offset = nodeHeaderSize + refBytesSize
       const indexBytes = data.slice(offset, offset + 32) as Bytes<32>
 

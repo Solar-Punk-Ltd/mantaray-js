@@ -15,9 +15,11 @@ const utf8ToBytes = (value: string): Uint8Array => {
   return new TextEncoder().encode(value)
 }
 
-const saveFunction = async (data: Uint8Array, options?: FileUploadOptions): Promise<Reference> => {
-  const hexRef = await bee.uploadData(stamp, data, options)
-
+const saveFunction = async (data: Uint8Array, options?: { ecrypt?: boolean }): Promise<Reference> => {
+  const uploadOptions: FileUploadOptions = {
+    encrypt: options?.ecrypt
+  }
+  const hexRef = await bee.uploadData(stamp, data, uploadOptions)
   return hexRef.reference
 }
 

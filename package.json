@@ -10,6 +10,7 @@
     "compile:types": "tsc --emitDeclarationOnly --declaration --skipLibCheck",
     "dev": "npm run compile -- --watch --env mode=development",
     "lint": "eslint --fix \"src/**/*.ts\" && prettier --write \"src/**/*.ts\"",
+    "lint:fix": "npm run lint -- --fix" ,
     "lint:check": "eslint \"src/**/*.ts\" && prettier --check \"src/**/*.ts\"",
     "check:types": "tsc --project tsconfig.json --skipLibCheck",
     "test": "jest --verbose --config=jest.config.ts",

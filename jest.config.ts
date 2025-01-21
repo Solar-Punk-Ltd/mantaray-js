@@ -10,7 +10,7 @@ export default async (): Promise<Config.InitialOptions> => {
   if (!process.env.BEE_POSTAGE) {
     try {
       console.log('Creating postage stamps...')
-      const beeUrl = process.env.BEE_DEBUG_API_URL || 'http://localhost:1633'
+      const beeUrl = process.env.BEE_API_URL || 'http://localhost:1633'
       const bee = new Bee(beeUrl)
       process.env.BEE_POSTAGE = await bee.createPostageBatch('414720000', 20, {
         waitForUsable: true,

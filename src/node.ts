@@ -161,10 +161,10 @@ export class MantarayFork {
       const { refBytesSize, metadataByteSize } = withMetadata
 
       if (metadataByteSize > 0) {
-        const uint8 = data.slice(nodeForkSizes.preReference, nodeForkSizes.preReference + refBytesSize) as
+        const entryAsBytes = data.slice(nodeForkSizes.preReference, nodeForkSizes.preReference + refBytesSize) as
           | Bytes<32>
           | Bytes<64>
-        node.setEntry = Utils.bytesToHex(uint8) as Reference
+        node.setEntry = Utils.bytesToHex(entryAsBytes) as Reference
 
         const startMetadata = nodeForkSizes.preReference + refBytesSize + nodeForkSizes.metadata
         const metadataBytes = data.slice(startMetadata, startMetadata + metadataByteSize)
@@ -173,8 +173,8 @@ export class MantarayFork {
         node.setMetadata = JSON.parse(jsonString)
       }
     } else {
-      const uint8 = data.slice(nodeForkSizes.preReference) as Bytes<32> | Bytes<64>
-      node.setEntry = Utils.bytesToHex(uint8) as Reference
+      const entryAsBytes = data.slice(nodeForkSizes.preReference) as Bytes<32> | Bytes<64>
+      node.setEntry = Utils.bytesToHex(entryAsBytes) as Reference
     }
     node.setType = nodeType
 

@@ -149,25 +149,6 @@ export function common(a: Uint8Array, b: Uint8Array): Uint8Array {
   return c
 }
 
-export function hexStringToUint8Array(hexString: Utils.HexString | undefined) {
-  if (!hexString) return []
-
-  if (hexString.startsWith('0x')) {
-    hexString = hexString.slice(2)
-  }
-
-  if (hexString.length % 2 !== 0) {
-    throw new Error('Hex string must have an even length')
-  }
-
-  const byteArray = new Uint8Array(hexString.length / 2)
-  for (let i = 0; i < byteArray.length; i++) {
-    byteArray[i] = parseInt(hexString.substr(i * 2, 2), 16)
-  }
-
-  return byteArray
-}
-
 export class IndexBytes {
   private bytes: Bytes<32>
 

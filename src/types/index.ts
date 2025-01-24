@@ -1,12 +1,12 @@
+import { Reference } from '@ethersphere/bee-js'
+
 export const marshalVersionValues = ['0.1', '0.2'] as const
 
-export type MarshalVersion = typeof marshalVersionValues[number]
+export type MarshalVersion = (typeof marshalVersionValues)[number]
 
 export interface Bytes<Length extends number> extends Uint8Array {
   readonly length: Length
 }
-
-export type Reference = Bytes<32 | 64>
 
 export enum NodeType {
   value = 2,

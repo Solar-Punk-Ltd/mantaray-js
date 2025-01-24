@@ -1,3 +1,4 @@
+import { Reference, Utils } from '@ethersphere/bee-js'
 import { equalNodes, MantarayNode } from '../src/node'
 import { gen32Bytes } from '../src/utils'
 
@@ -23,7 +24,7 @@ export function commonMatchers(): void {
 
       try {
         equalNodes(received, compareTo)
-      } catch (e) {
+      } catch (e: any) {
         result.pass = false
         result.message = () => e.message
       }
@@ -35,7 +36,7 @@ export function commonMatchers(): void {
 
 export function getSampleMantarayNode(): { node: MantarayNode; paths: Uint8Array[] } {
   const node = new MantarayNode()
-  const randAddress = gen32Bytes()
+  const randAddress = Utils.bytesToHex(gen32Bytes()) as Reference
   node.setEntry = randAddress
   const path1 = new TextEncoder().encode('path1/valami/elso')
   const path2 = new TextEncoder().encode('path1/valami/masodik')

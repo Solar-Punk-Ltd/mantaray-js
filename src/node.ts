@@ -1,4 +1,5 @@
-import { Bytes, MarshalVersion, MetadataMapping, NodeType, Reference, StorageLoader, StorageSaver } from './types'
+import { Bytes, MarshalVersion, MetadataMapping, NodeType, StorageLoader, StorageSaver } from './types'
+import { Reference, Utils } from '@ethersphere/bee-js'
 import {
   checkReference,
   common,
@@ -113,7 +114,9 @@ export class MantarayFork {
 
     if (!entry) throw Error('cannot serialize MantarayFork because it does not have contentAddress')
 
-    const data = new Uint8Array([nodeType, ...prefixLengthBytes, ...prefixBytes, ...entry])
+    const entryAsUint8 = Utils.hexToBytes(entry)
+
+    const data = new Uint8Array([nodeType, ...prefixLengthBytes, ...prefixBytes, ...entryAsUint8])
 
     if (this.node.IsWithMetadataType()) {
       const jsonString = JSON.stringify(this.node.getMetadata)
@@ -158,9 +161,10 @@ export class MantarayFork {
       const { refBytesSize, metadataByteSize } = withMetadata
 
       if (metadataByteSize > 0) {
-        node.setEntry = data.slice(nodeForkSizes.preReference, nodeForkSizes.preReference + refBytesSize) as
+        const entryAsBytes = data.slice(nodeForkSizes.preReference, nodeForkSizes.preReference + refBytesSize) as
           | Bytes<32>
           | Bytes<64>
+        node.setEntry = Utils.bytesToHex(entryAsBytes) as Reference
 
         const startMetadata = nodeForkSizes.preReference + refBytesSize + nodeForkSizes.metadata
         const metadataBytes = data.slice(startMetadata, startMetadata + metadataByteSize)
@@ -169,7 +173,8 @@ export class MantarayFork {
         node.setMetadata = JSON.parse(jsonString)
       }
     } else {
-      node.setEntry = data.slice(nodeForkSizes.preReference) as Bytes<32> | Bytes<64>
+      const entryAsBytes = data.slice(nodeForkSizes.preReference) as Bytes<32> | Bytes<64>
+      node.setEntry = Utils.bytesToHex(entryAsBytes) as Reference
     }
     node.setType = nodeType
 
@@ -202,7 +207,7 @@ export class MantarayNode {
 
     this.entry = entry
 
-    if (!equalBytes(entry, new Uint8Array(entry.length))) this.makeValue()
+    if (entry !== '0'.repeat(entry.length)) this.makeValue()
 
     this.makeDirty()
   }
@@ -515,7 +520,7 @@ export class MantarayNode {
       this.forks = {} //if there were no forks initialized it is not indended to be
     }
 
-    if (!this.entry) this.entry = new Uint8Array(32) as Bytes<32> // at directoties
+    if (!this.entry) this.entry = '0'.repeat(64) as Reference // at directoties
 
     /// Header
     const version: MarshalVersion = '0.2'
@@ -545,7 +550,7 @@ export class MantarayNode {
       ...this.obfuscationKey!,
       ...versionBytes,
       ...referenceLengthBytes,
-      ...this.entry,
+      ...Utils.hexToBytes<64>(this.entry),
       ...indexBytes,
       ...flattenBytesArray(forkSerializations),
     ])
@@ -580,7 +585,8 @@ export class MantarayNode {
       if (refBytesSize === 0) {
         entry = new Uint8Array(32)
       }
-      this.setEntry = entry as Reference
+      this.setEntry = Utils.bytesToHex(entry)
+
       let offset = nodeHeaderSize + refBytesSize
       const indexBytes = data.slice(offset, offset + 32) as Bytes<32>
 
@@ -652,7 +658,7 @@ export class MantarayNode {
 
     // save the actual manifest as well
     const data = this.serialize()
-    const reference = await storageSaver(data)
+    const reference = await storageSaver(data) // encrypt should be here?
 
     this.setContentAddress = reference
 
@@ -689,10 +695,10 @@ function serializeVersion(version: MarshalVersion): Bytes<31> {
 }
 
 function serializeReferenceLength(entry: Reference): Bytes<1> {
-  const referenceLength = entry.length
+  const referenceLength = entry.length / 2
 
   if (referenceLength !== 32 && referenceLength !== 64) {
-    throw new Error(`Wrong referenceLength. It can be only 32 or 64. Got: ${referenceLength}`)
+    throw new Error(`Wrong referenceLength. It can be only 64 or 128. Got: ${referenceLength}`)
   }
   const bytes = new Uint8Array(1)
   bytes[0] = referenceLength
@@ -742,8 +748,8 @@ export const equalNodes = (a: MantarayNode, b: MantarayNode, accumulatedPrefix =
   }
 
   // node entry comparisation
-  if (a.getEntry === b.getEntry) {
-    throw Error(`Nodes do not have same entries. \n a: ${a.getEntry} \n b: ${a.getEntry}`)
+  if (a.getEntry?.toString() !== b.getEntry?.toString()) {
+    throw Error(`Nodes do not have same entries. \n a: ${a.getEntry} \n b: ${b.getEntry}`)
   }
 
   if (!a.forks) return

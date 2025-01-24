@@ -1,14 +1,15 @@
 import getRandomValues from 'get-random-values'
 import type { Message } from 'js-sha3'
 import { keccak256 } from 'js-sha3'
-import { Bytes, Reference } from './types'
+import { Bytes } from './types'
+import { Reference, Utils } from '@ethersphere/bee-js'
 
 export function checkReference(ref: Reference): void | never {
-  if (!(ref instanceof Uint8Array)) {
-    throw new Error('Given referennce is not an Uint8Array instance.')
+  if (!Utils.isHexString(ref)) {
+    throw new Error('Given referennce is not a HexString.')
   }
 
-  if (ref.length !== 32 && ref.length !== 64) {
+  if (ref.length !== 64 && ref.length !== 128) {
     throw new Error(`Wrong reference length. Entry only can be 32 or 64 length in bytes`)
   }
 }
@@ -16,7 +17,7 @@ export function checkReference(ref: Reference): void | never {
 export function checkBytes<Length extends number>(bytes: unknown, length: number): asserts bytes is Bytes<Length> {
   if (!(bytes instanceof Uint8Array)) throw Error('Cannot set given bytes, because is not an Uint8Array type')
 
-  if (bytes.length !== 32) {
+  if (bytes.length !== length) {
     throw Error(`Cannot set given bytes, because it does not have ${length} length. Got ${bytes.length}`)
   }
 }
